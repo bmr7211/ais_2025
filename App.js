@@ -1,10 +1,10 @@
 // /Users/shinji81/my-app/src/App.js
 import React, { useState, useEffect, useCallback } from 'react';
+import './App.css';
 
 function App() {
   const [selectedKeywords, setSelectedKeywords] = useState([]);
   const [contentImages, setContentImages] = useState([]);
-  //const [keywordNames, setKeywordNames] = useState({});
   const [keywordMap, setKeywordMap] = useState({});
 
   useEffect(() => {
@@ -29,21 +29,18 @@ function App() {
     fetchKeywords();
   }, []);
 
-  // 키워드 선택/해제
   const handleButtonClick = (id) => {
     setSelectedKeywords((prev) =>
       prev.includes(id) ? prev.filter((k) => k !== id) : [...prev, id]
     );
   };
 
-  // 콘텐츠 요청
   const fetchContentImages = useCallback(async () => {
     if (selectedKeywords.length === 0) {
       setContentImages([]);
       return;
     }
 
-    // `keywords_id` --> `keywords_name` 변환
     const keywordNames = selectedKeywords.map((id) => keywordMap[id]).filter(Boolean);
     console.log('서버에 전달할 키워드:', keywordNames);
 
@@ -65,59 +62,63 @@ function App() {
     }
   }, [selectedKeywords, keywordMap]);
 
-  // 선택된 키워드가 변경될 때마다 fetch 실행
   useEffect(() => {
     fetchContentImages();
   }, [fetchContentImages]);
 
-  // 선택 해제 버튼
   const handleClearSelection = () => {
     setSelectedKeywords([]);
     setContentImages([]);
   };
 
   return (
-    <div>
-      <h1>Keyword Selector</h1>
-      <div>
+    <div className="app">
+      <h1 className="title">Keyword Selector</h1>
+
+      {/* 검색박스 키워드 표시 */}
+      <div className="selected-keywords-box">
+        {selectedKeywords.length > 0 ? (
+          selectedKeywords.map((id) => (
+            <span key={id} className="selected-keywords">
+              #{keywordMap[id]}
+            </span>
+          ))
+        ) : (
+          <span className="no-keywords">선택된 키워드가 없습니다.</span>
+        )}
+      </div>
+
+      {/* 키워드 버튼 */}
+      <div className="keyword-container">
         {Object.keys(keywordMap).map((id) => (
           <button
             key={id}
             onClick={() => handleButtonClick(id)}
-            style={{
-              backgroundColor: selectedKeywords.includes(id) ? 'red' : 'white',
-            }}
+            className={`keyword-button ${selectedKeywords.includes(id) ? 'active' : ''}`}
           >
             {keywordMap[id]}
           </button>
         ))}
       </div>
 
-      <button onClick={handleClearSelection}>선택 해제</button>
+      <button className="clear-button" onClick={handleClearSelection}>
+        선택 해제
+      </button>
 
-      <h2>선택된 키워드:</h2>
-      <p>
-        {selectedKeywords.length > 0
-          ? selectedKeywords.map((id) => keywordMap[id]).join(', ')
-          : '선택된 키워드가 없습니다.'}
-      </p>
-
-      <h3>콘텐츠 이미지:</h3>
-      <div>
+      <h3 className="subtitle">Contents</h3>
+      <div className="content-container">
         {contentImages.length > 0 ? (
           contentImages.map((content, index) => (
-            <div key={index}>
+            <div key={index} className="content-card">
               <img
-                src={`http://localhost:3001/${content.contents_poster}`} // 이미지 절대 경로 수정
+                src={`http://localhost:3001/${content.contents_poster}`}
                 alt={content.contents_name}
-                width="200"
-                height="300"
               />
               <p>{content.contents_name}</p>
             </div>
           ))
         ) : (
-          <p>선택된 키워드에 해당하는 콘텐츠가 없습니다.</p>
+          <p className="no-content">선택된 키워드에 해당하는 콘텐츠가 없습니다.</p>
         )}
       </div>
     </div>
